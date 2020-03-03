@@ -6,9 +6,41 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = F)
 library(tidyverse)
 library(googlesheets4)
 library(fs)
+library(readxl)
+library(janitor)
+library(gt)
 ```
+
+```{r get data}
+
+current <- read_excel("class_enrollment_summary_by_term_2.25.20_0.xlsx", skip = 3) %>%
+  clean_names()
+
+old <- read_excel("class_enrollment_summary_by_term_3.22.19_0.xlsx", skip = 3) %>%
+  clean_names()
+```
+
+```{r}
+
+new <- current %>%
+  anti_join(old, by = "course_id")
+
+top5 <- new %>%
+  arrange(desc(total)) %>%
+  slice(1:5) %>%
+  select(course_id,course_title,course_name,total)
+top5 %>%
+  gt() %>%
+  tab_header(title = "5 Largest New Harvard Courses") %>%
+  cols_label(course_id = "Course ID",
+             course_title = "Course Title",
+             course_name = "Course Name",
+             total = "Total Enrollment")
+
+```
+
 
